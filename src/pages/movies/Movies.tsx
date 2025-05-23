@@ -1,10 +1,32 @@
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../../Redux/store/Store";
+import { fetchMovies, selectMovies } from "../../Redux/features/movieSlice";
+import { useEffect, useState } from "react";
+import CartSlider from "../Cartslider.tsx/Cartslider";
+import TrendingMovies from "../TrendingMovies/TrendingMovies";
+import Loader from "../SkeletonLoader/Loader";
+
+
 
 const Movies = () => {
+  const { items, status } = useSelector(selectMovies);
+  const dispatch = useDispatch<AppDispatch>();
+  const [selectedType, setSelectedType] = useState<"movie" | "tv">("movie");
+
+  useEffect(() => {
+    dispatch(fetchMovies(selectedType));
+  }, [dispatch, selectedType]);
+
   return (
-    <div className="bg-black py-5 flex mx-2 text-white justify-start items-center">
-      <div className="bg-blue-500 w-[4px] h-[40px] ml-2"></div>
-      <h1 className="font-bold text-2xl ml-2">What's Popular</h1>
+    <div className="bg-black text-white ">
+      <TrendingMovies
+        selectedType={selectedType}
+        setSelectedType={setSelectedType}
+      />
+
+      <div className="w-full overflow-hidden sm:px-4   bg-black">
+        {status === "loading" ? <Loader /> : <CartSlider items={items} />}
+      </div>
     </div>
   );
 };

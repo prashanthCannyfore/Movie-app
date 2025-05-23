@@ -3,48 +3,51 @@ import { Movie } from "../../../src/types/Types";
 import axios from "axios";
 import { api_key, base_Url } from "../../pages/Utils";
 
-
-interface moviesstate {
+interface MoviesState  {
   items: Movie[];
-  status: "loading" | "success" | "failed"; 
+  status: "loading" | "success" | "failed";
   error: string | null;
 }
 
-const initialState: moviesstate = {
+const initialState: MoviesState  = {
   items: [],
   status: "success",
   error: null,
 };
 
+
 export const fetchMovies = createAsyncThunk(
-  "movies/fetchMovies",
-  async (type: "day" | "week") => {
-    const response = await axios.get(
-      `${base_Url}/trending/movie/${type}?api_key=${api_key}`
-    );
-    return response.data.results as Movie[];
-  }
-);
+    "movie/popular?api_key",
+    async (type: "movie" | "tv") => {
+      const response = await axios.get(
+        `${base_Url}/${type}/popular?api_key=${api_key}`
+      );
+  
+      return response.data.results as Movie[];
+    }
+  );
 
 const movieSlice = createSlice({
   name: "movies",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchMovies.pending,(state, action)=>{
+    builder
+      .addCase(fetchMovies.pending, (state) => {
         state.status = "loading";
-    })
-    .addCase(fetchMovies.fulfilled,(state, action)=>{
-        (state.status = "success"), (state.items = action.payload);
-    })
-    .addCase(fetchMovies.rejected,(state, action) => {
-     (state.status = "failed"),
-     (state.error = action.error.message = "something went wrong!")
-    })
-    console.log("+#",fetchMovies);
+        state.error = null;
+      })
+      .addCase(fetchMovies.fulfilled, (state, action) => {
+        state.status = "success";
+        state.items = action.payload;
+        state.error = null; 
+      })
+      .addCase(fetchMovies.rejected, (state) => {
+        state.status = "failed";
+        state.error = "Something went wrong!";
+      });
   },
-  
 });
-
-export default movieSlice.reducer;
- 
+export const selectMovies = (state:any) => state.movies;
+  
+export default movieSlice.reducer
